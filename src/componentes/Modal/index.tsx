@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef } from "react";
+import React, { useRef } from "react";
 import {
   ButtonGroup,
   CloseButton,
@@ -20,31 +20,29 @@ export interface ModalHandle {
   close: () => void;
 }
 
-const Modal = forwardRef<ModalHandle, ModalProps>(
-  ({ icon, titulo, children, aoClicar }, ref) => {
-    const dialogRef = useRef<HTMLDialogElement>(null);
+const Modal = ({ icon, titulo, children, aoClicar }: ModalProps) => {
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-    return (
-      <ModalOverlay>
-        <ModalContainer ref={dialogRef}>
-          <ModalHeader>
-            <div>
-              {icon}
-              {titulo}
-            </div>
-            <CloseButton>x</CloseButton>
-          </ModalHeader>
-          {children}
-          <ButtonGroup>
-            <Botao $variante="secundario">Cancelar</Botao>
-            <Botao $variante="primario" onClick={aoClicar}>
-              Adicionar
-            </Botao>
-          </ButtonGroup>
-        </ModalContainer>
-      </ModalOverlay>
-    );
-  }
-);
+  return (
+    <ModalOverlay>
+      <ModalContainer ref={dialogRef}>
+        <ModalHeader>
+          <div>
+            {icon}
+            {titulo}
+          </div>
+          <CloseButton>x</CloseButton>
+        </ModalHeader>
+        {children}
+        <ButtonGroup>
+          <Botao $variante="secundario">Cancelar</Botao>
+          <Botao $variante="primario" onClick={aoClicar}>
+            Adicionar
+          </Botao>
+        </ButtonGroup>
+      </ModalContainer>
+    </ModalOverlay>
+  );
+};
 
 export default Modal;
