@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { IUsuario } from "../types";
 import { criarUsuario, obterUsuario } from "../api";
 
@@ -45,4 +45,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AppContext.Provider>
   );
+};
+
+export default AppContext;
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error("useAppContext deve ser usado dentro de um AppProvider");
+  }
+  return context;
 };
