@@ -1,25 +1,35 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { IUsuario } from "../types";
-import { criarUsuario, obterUsuario } from "../api";
+import { ITransacoes, IUsuario } from "../types";
+import {
+  criarTransacao,
+  criarUsuario,
+  obterTransacoes,
+  obterUsuario,
+} from "../api";
 
 interface AppContextType {
   usuario: IUsuario | null;
-  setUsuario: (usuario: IUsuario | null) => void;
   criaUsuario: (usuario: Omit<IUsuario, "id">) => Promise<void>;
+  transacoes: ITransacoes[];
+  criaTransacao: (novaTransacao: Omit<ITransacoes, "id">) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [usuario, setUsuario] = useState<IUsuario | null>(null);
+  const [transacoes, setTransacoes] = useState<ITransacoes[]>([]);
 
   const carregaDadosUsuario = async () => {
     try {
       const usuario = await obterUsuario();
+      const transacoes = await obterTransacoes();
       if (usuario.length > 0) {
         setUsuario(usuario[0]);
+        setTransacoes(transacoes);
       } else {
         setUsuario(null);
+        setTransacoes([]);
       }
     } catch (error) {
       console.error("Erro ao carregar dados do usuário:", error);
@@ -40,8 +50,19 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const criaTransacao = async (novaTransacao: Omit<ITransacoes, "id">) => {
+    try {
+      const transacaoCriada = await criarTransacao(novaTransacao);
+      setTransacoes((prev) => [...prev, transacaoCriada]);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <AppContext.Provider value={{ usuario, setUsuario, criaUsuario }}>
+    <AppContext.Provider
+      value={{ usuario, criaUsuario, transacoes, criaTransacao }}
+    >
       {children}
     </AppContext.Provider>
   );
