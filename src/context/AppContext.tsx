@@ -13,7 +13,9 @@ interface AppContextType {
     usuario: Omit<IUsuario, "id" | "orcamentoDiario">
   ) => Promise<void>;
   transacoes: ITransacoes[];
-  criaTransacao: (novaTransacao: Omit<ITransacoes, "id">) => Promise<void>;
+  criaTransacao: (
+    novaTransacao: Omit<ITransacoes, "id" | "userId">
+  ) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -54,10 +56,23 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const criaTransacao = async (novaTransacao: Omit<ITransacoes, "id">) => {
+  const criaTransacao = async (
+    novaTransacao: Omit<ITransacoes, "id" | "userId">
+  ) => {
     try {
-      const transacaoCriada = await criarTransacao(novaTransacao);
-      setTransacoes((prev) => [...prev, transacaoCriada]);
+      if (!usuario) {
+        throw new Error(
+          "Não podemos criar transações sem um usuário associado"
+        );
+      }
+      const { transacao, novoOrcamentoDiario } = await criarTransacao(
+        novaTransacao,
+        usuario
+      );
+      setTransacoes((prev) => [...prev, transacao]);
+      setUsuario((prev) =>
+        prev ? { ...prev, orcamentoDiario: novoOrcamentoDiario } : null
+      );
     } catch (err) {
       console.error(err);
     }
