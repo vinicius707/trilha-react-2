@@ -26,7 +26,7 @@ export const criarUsuario = async (
 
 export const atualizarUsuario = async (
   id: string,
-  dados: IUsuario
+  dados: Partial<IUsuario>
 ): Promise<IUsuario> => {
   const { data } = await api.patch(`/usuarios/${id}`, dados);
   return data;
@@ -38,8 +38,28 @@ export const obterTransacoes = async (): Promise<ITransacoes[]> => {
 };
 
 export const criarTransacao = async (
-  transacao: Omit<ITransacoes, "id">
+  transacao: Omit<ITransacoes, "id">,
+  usuario: Omit<IUsuario, "nome">
 ): Promise<ITransacoes> => {
-  const { data } = await api.post<ITransacoes>("/transacoes", transacao);
+  const transacaoComId = { ...transacao, userId: usuario.id };
+  const { data } = await api.post<ITransacoes>("/transacoes", transacaoComId);
+
+  const transacoes = await obterTransacoes();
+  const saldo = calcularSaldo(transacoes);
+
+  const novoOrcamentoDiario = usuario.renda / 30 + saldo;
+
+  await atualizarUsuario(String(usuario.id), {
+    orcamentoDiario: novoOrcamentoDiario,
+  }).catch((error) => console.error(error));
+
   return data;
+};
+
+const calcularSaldo = (transacoes: ITransacoes[]): number => {
+  return transacoes.reduce((total, transacao) => {
+    return transacao.tipo === "receita"
+      ? total + transacao.valor
+      : total - transacao.valor;
+  }, 0);
 };
